@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Composite View (Xored homework)
+Bundle-SymbolicName: pl.kosicki.CompositeLaunchPlugin;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: pl.kosicki.CompositeLaunchPlugin
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.debug.core,
+ org.eclipse.debug.ui
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-Vendor: Aleksander Kosicki
+Bundle-ClassPath: lib/guava-14.0-rc1.jar,
+ lib/jsr305-2.0.1.jar,
+ .

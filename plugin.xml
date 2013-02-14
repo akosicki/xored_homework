@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            delegate="pl.kosicki.CompositeLaunchDelegate"
+            id="pl.kosicki.compositeLaunch"
+            modes="run,debug"
+            name="Composite Launch">
+      </launchConfigurationType>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+      <launchConfigurationTypeImage
+            configTypeID="pl.kosicki.compositeLaunch"
+            icon="icons/clauncher.gif"
+            id="pl.kosicki.compositeLaunchImage">
+      </launchConfigurationTypeImage>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="pl.kosicki.ui.CompositeLaunchConfigurationTabGroup"
+            id="pl.kosicki.compositeLaunchTabGroup"
+            type="pl.kosicki.compositeLaunch">
+      </launchConfigurationTabGroup>
+   </extension>
+
+</plugin>
