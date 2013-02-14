@@ -1,9 +1,11 @@
 package pl.kosicki;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
@@ -79,13 +81,13 @@ public class CompositeLaunchPlugin extends AbstractUIPlugin {
 	 * @param configuration
 	 *            composite launch configuration
 	 * @param mode
-	 *            "run" or "debug" constant
-	 * @return list of child configurations contained in the given composit configuration
+	 *            "run" or "debug" constant or <code>null<code/> if mode does not matter
+	 * @return list of child configurations contained in the given composite configuration
 	 * @throws CoreException
 	 */
 	@Nonnull
 	public static List<ILaunchConfiguration> getChildConfigurations(@Nonnull ILaunchConfiguration configuration,
-			@Nonnull String mode) throws CoreException {
+			@Nullable String mode) throws CoreException {
 		Preconditions.checkArgument(COMPOSITE_CONF_TYPE_ID.equals(configuration.getType().getIdentifier()));
 
 		List<ILaunchConfiguration> childConfs = Lists.newLinkedList();
@@ -95,7 +97,8 @@ public class CompositeLaunchPlugin extends AbstractUIPlugin {
 				.getLaunchConfigurations();
 		for (ILaunchConfiguration childConf : allConfigurations) {
 			try {
-				if (childConfNames.contains(childConf.getName()) && childConf.getType().supportsMode(mode)) {
+				if (childConfNames.contains(childConf.getName())
+						&& (mode == null || childConf.getType().supportsMode(mode))) {
 					childConfs.add(childConf);
 				}
 			} catch (CoreException e) {
@@ -103,6 +106,20 @@ public class CompositeLaunchPlugin extends AbstractUIPlugin {
 			}
 		}
 		return childConfs;
+	}
+
+	/**
+	 * Shortcut for <code>getChildConfigurations(configuration, null)</code>
+	 * 
+	 * @param configuration
+	 * @return
+	 * @throws CoreException
+	 * @see CompositeLaunchPlugin#getChildConfigurations(ILaunchConfiguration, String)
+	 */
+	@Nonnull
+	public static List<ILaunchConfiguration> getChildConfigurations(@Nonnull ILaunchConfiguration configuration)
+			throws CoreException {
+		return getChildConfigurations(configuration, null);
 	}
 
 	/**

@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -37,8 +38,17 @@ import com.google.common.collect.Lists;
  * Settings for the composite launch configuration, allows user to select list of a child configurations
  */
 public class CompositeLaunchConfigurationTab extends AbstractLaunchConfigurationTab {
+	@Nullable
 	private CheckboxTreeViewer viewer;
+	@Nullable
 	private ITreeContentProvider contentProvider;
+
+	/**
+	 * Selected children launch configurations that do not support current mode e.g. we are in "run" and some child
+	 * launch configurations are for "debug" only
+	 */
+	@Nullable
+	private List<String> unsupportedChildConfs;
 
 	@Override
 	public void createControl(Composite parent) {
@@ -75,14 +85,22 @@ public class CompositeLaunchConfigurationTab extends AbstractLaunchConfiguration
 		viewer.addFilter(new LaunchGroupFilter(DebugUITools.getLaunchGroup(configuration, mode)));
 		viewer.setInput(ResourcesPlugin.getWorkspace().getRoot());
 
+		List<Object> checkedElements = Lists.newArrayList();
+		unsupportedChildConfs = Lists.newLinkedList();
+
 		try {
-			List<Object> checkedElements = Lists.newArrayList();
-			for (Object element : contentProvider.getElements(null)) {
-				if (!(element instanceof ILaunchConfigurationType)) {
-					continue;
+			for (ILaunchConfiguration childConf : CompositeLaunchPlugin.getChildConfigurations(configuration)) {
+				try {
+					if (childConf.getType().supportsMode(mode)) {
+						checkedElements.add(childConf);
+					} else {
+						unsupportedChildConfs.add(childConf.getName());
+					}
+				} catch (CoreException e) {
+					CompositeLaunchPlugin.log(e);
 				}
-				checkedElements.addAll(CompositeLaunchPlugin.getChildConfigurations(configuration, mode));
 			}
+			checkedElements.addAll(CompositeLaunchPlugin.getChildConfigurations(configuration, mode));
 			viewer.setCheckedElements(checkedElements.toArray());
 		} catch (CoreException e) {
 			CompositeLaunchPlugin.log(e);
@@ -99,10 +117,12 @@ public class CompositeLaunchConfigurationTab extends AbstractLaunchConfiguration
 	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
 		Preconditions.checkNotNull(configuration);
+		assert unsupportedChildConfs != null;
 
 		List<Object> checkedElements = Arrays.asList(viewer.getCheckedElements());
-		CompositeLaunchPlugin.setConfigurations(configuration,
-				Iterables.filter(checkedElements, Predicates.instanceOf(ILaunchConfiguration.class)));
+		CompositeLaunchPlugin.setConfigurations(configuration, Iterables.concat(
+				Iterables.filter(checkedElements, Predicates.instanceOf(ILaunchConfiguration.class)),
+				unsupportedChildConfs));
 	}
 
 	@Override
